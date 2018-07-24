@@ -1,7 +1,10 @@
 package com.cqu.wb.controller;
 
+import com.cqu.wb.domain.Demo;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.result.Result;
+import com.cqu.wb.service.DemoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping(value = "/hello")
 public class DemoController {
+
+    @Autowired
+    private DemoService demoService;
+
     /**
      *
      * @return
@@ -46,5 +53,29 @@ public class DemoController {
     public String helloThymeleaf(Model model) {
         model.addAttribute("name", "Wonder");
         return "hello";
+    }
+
+    /**
+     *
+     * @return
+     * @description 根据Id获取Demo实例
+     */
+    @RequestMapping(value = "/getDemoById", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Demo> getDemoById() {
+        Demo demo = demoService.getDemoById(1);
+        return Result.success(demo);
+    }
+
+    /**
+     *
+     * @return
+     * @description 测试事务
+     */
+    @RequestMapping(value = "/insertDemo", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Boolean> insertDemo() {
+        demoService.insertDemo();
+        return  Result.success(true);
     }
 }
