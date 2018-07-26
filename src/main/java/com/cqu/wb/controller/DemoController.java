@@ -1,6 +1,8 @@
 package com.cqu.wb.controller;
 
 import com.cqu.wb.domain.Demo;
+import com.cqu.wb.redis.DemoKey;
+import com.cqu.wb.redis.RedisService;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.result.Result;
 import com.cqu.wb.service.DemoService;
@@ -20,6 +22,8 @@ public class DemoController {
 
     @Autowired
     private DemoService demoService;
+    @Autowired
+    private RedisService redisServer;
 
     /**
      *
@@ -60,7 +64,7 @@ public class DemoController {
      * @return
      * @description 根据Id获取Demo实例
      */
-    @RequestMapping(value = "/getDemoById", method = RequestMethod.GET)
+    @RequestMapping(value = "/db/get", method = RequestMethod.GET)
     @ResponseBody
     public Result<Demo> getDemoById() {
         Demo demo = demoService.getDemoById(1);
@@ -72,10 +76,37 @@ public class DemoController {
      * @return
      * @description 测试事务
      */
-    @RequestMapping(value = "/insertDemo", method = RequestMethod.GET)
+    @RequestMapping(value = "/db/tx", method = RequestMethod.GET)
     @ResponseBody
     public Result<Boolean> insertDemo() {
         demoService.insertDemo();
         return  Result.success(true);
+    }
+
+    /**
+     *
+     * @return
+     * @description 从Redis中获取值
+     */
+    @RequestMapping(value = "/redis/get", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Demo> redisGet() {
+        Demo demo = redisServer.get(DemoKey.idDemoKey, "1", Demo.class);
+        return Result.success(demo);
+    }
+
+    /**
+     *
+     * @return
+     * @description 向Redis中设置值
+     */
+    @RequestMapping(value = "/redis/set", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Boolean> redisSet() {
+        Demo demo = new Demo();
+        demo.setId(1);
+        demo.setName("mike");
+        boolean result = redisServer.set(DemoKey.idDemoKey, "1", demo);
+        return Result.success(result);
     }
 }
