@@ -26,7 +26,7 @@ public class Result<T> {
      * @return
      * @description 失败时调用封装Result
      */
-    public static <T> Result<T> erroe(CodeMessage codeMessage) {
+    public static <T> Result<T> error(CodeMessage codeMessage) {
         return new Result<T>(codeMessage);
     }
 

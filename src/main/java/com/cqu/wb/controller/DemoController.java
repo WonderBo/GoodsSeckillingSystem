@@ -44,7 +44,7 @@ public class DemoController {
     @RequestMapping(value = "/error", method = RequestMethod.GET)
     @ResponseBody
     public Result<String> helloError() {
-        return Result.erroe(CodeMessage.SERVER_ERROR);
+        return Result.error(CodeMessage.SERVER_ERROR);
     }
 
     /**
