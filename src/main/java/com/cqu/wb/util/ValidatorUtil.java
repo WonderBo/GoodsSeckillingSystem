@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  */
 public class ValidatorUtil {
     // 手机号码正则表达式
-    private static final String MOBILE_REGEX = "^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\\\\d{8}$";
+    private static final String MOBILE_REGEX = "^((1[3,5,8][0-9])|(14[5,7])|(17[0,6,7,8])|(19[7]))\\d{8}$";
 
     /**
      *
@@ -24,9 +24,13 @@ public class ValidatorUtil {
             return false;
         }
 
-        Pattern mobilePattern = Pattern.compile(MOBILE_REGEX);
+        Pattern mobilePattern = Pattern.compile(MOBILE_REGEX, Pattern.CASE_INSENSITIVE);
         Matcher mobileMatcher = mobilePattern.matcher(str);
 
         return mobileMatcher.matches();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(isMobile("1535110038"));
     }
 }

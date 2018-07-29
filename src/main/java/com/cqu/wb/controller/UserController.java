@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
+
 /**
  * Created by jingquan on 2018/7/29.
  */
@@ -44,10 +46,11 @@ public class UserController {
      */
     @RequestMapping(value = "/do_login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Boolean> doLogin(LoginVo loginVo) {
+    public Result<Boolean> doLogin(@Valid LoginVo loginVo) {
         logger.info(loginVo.toString());
 
-        // 页面参数校验
+/*
+        // 页面参数校验（手工校验），推荐使用JSR303参数校验框架
         String mobile = loginVo.getMobile();
         String formPass = loginVo.getPassword();
         if(StringUtils.isEmpty(formPass)) {
@@ -59,8 +62,9 @@ public class UserController {
         if(ValidatorUtil.isMobile(mobile)) {
             return Result.error(CodeMessage.MOBILE_ERROR);
         }
+*/
 
-        // 登录
+        // 登录功能
         CodeMessage codeMessage = userService.login(loginVo);
         if(codeMessage.getCode() == 0) {
             return Result.success(true);
