@@ -12,6 +12,7 @@ public class CodeMessage {
     public static final CodeMessage SUCCESS = new CodeMessage(0, "成功");
     // 通用错误码   5001XX
     public static final CodeMessage SERVER_ERROR = new CodeMessage(500100, "服务端异常");
+    public static final CodeMessage BIND_ERROR = new CodeMessage(500110, "参数校验异常：%s");
     // 登录模块错误码   5002XX
     public static final CodeMessage SESSION_ERROR = new CodeMessage(500210, "Session不存在或者已经失效");
     public static final CodeMessage PASSWORD_EMPTY = new CodeMessage(500211, "登录密码不能为空");
@@ -28,6 +29,24 @@ public class CodeMessage {
     private CodeMessage(int code, String msg) {
         this.code = code;
         this.msg = msg;
+    }
+
+    /**
+     *
+     * @param args
+     * @return
+     * @description 格式化带有格式占位符的消息字符串
+     */
+    public CodeMessage fillMessageArgs(Object... args) {
+        int code = this.code;
+        String message = String.format(this.msg, args);
+
+        return new CodeMessage(code, message);
+    }
+
+    @Override
+    public String toString() {
+        return "CodeMsg [code=" + code + ", msg=" + msg + "]";
     }
 
     public int getCode() {

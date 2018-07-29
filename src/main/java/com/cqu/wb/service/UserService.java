@@ -2,6 +2,7 @@ package com.cqu.wb.service;
 
 import com.cqu.wb.dao.UserDao;
 import com.cqu.wb.domain.User;
+import com.cqu.wb.exception.GlobalException;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.util.MD5Util;
 import com.cqu.wb.vo.LoginVo;
@@ -34,10 +35,10 @@ public class UserService {
      * @return
      * @description 用户登录验证
      */
-    public CodeMessage login(LoginVo loginVo) {
+    public boolean login(LoginVo loginVo) {
         // 用户输入验证
         if(loginVo == null) {
-            return CodeMessage.SERVER_ERROR;
+            throw new GlobalException(CodeMessage.SERVER_ERROR);
         }
 
         String mobile = loginVo.getMobile();
@@ -47,16 +48,16 @@ public class UserService {
         // 数据库验证
         // 判断手机号是否存在
         if(user == null) {
-            return CodeMessage.MOBILE_NOT_EXIT;
+            throw new GlobalException(CodeMessage.MOBILE_NOT_EXIT);
         }
         // 验证密码
         String dbSalt = user.getSalt();
         String dbPass = user.getPassword();
         String expectedPass = MD5Util.formPassToDBPass(formPass, dbSalt);
         if(!dbPass.equals(expectedPass)) {
-            return CodeMessage.PASSWORD_ERROR;
+            throw new GlobalException(CodeMessage.PASSWORD_ERROR);
         }
 
-        return CodeMessage.SUCCESS;
+        return true;
     }
 }

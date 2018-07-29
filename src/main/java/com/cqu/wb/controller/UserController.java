@@ -65,11 +65,8 @@ public class UserController {
 */
 
         // 登录功能
-        CodeMessage codeMessage = userService.login(loginVo);
-        if(codeMessage.getCode() == 0) {
-            return Result.success(true);
-        } else {
-            return Result.error(codeMessage);
-        }
+        userService.login(loginVo);
+
+        return Result.success(true);
     }
 }
