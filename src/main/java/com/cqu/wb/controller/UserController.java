@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 /**
@@ -46,7 +47,7 @@ public class UserController {
      */
     @RequestMapping(value = "/do_login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Boolean> doLogin(@Valid LoginVo loginVo) {
+    public Result<String> doLogin(HttpServletResponse response, @Valid LoginVo loginVo) {
         logger.info(loginVo.toString());
 
 /*
@@ -65,8 +66,8 @@ public class UserController {
 */
 
         // 登录功能
-        userService.login(loginVo);
+        String token = userService.login(response, loginVo);
 
-        return Result.success(true);
+        return Result.success(token);
     }
 }
