@@ -51,7 +51,7 @@ public class UserController {
         logger.info(loginVo.toString());
 
 /*
-        // 页面参数校验（手工校验），推荐使用JSR303参数校验框架
+        // 页面参数校验（手工校验），推荐使用JSR303参数校验框架--@Valid
         String mobile = loginVo.getMobile();
         String formPass = loginVo.getPassword();
         if(StringUtils.isEmpty(formPass)) {
