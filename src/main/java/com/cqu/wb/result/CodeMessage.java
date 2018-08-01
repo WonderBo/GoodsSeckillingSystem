@@ -25,6 +25,9 @@ public class CodeMessage {
     // 订单模块错误码   5004XX
 
     // 秒杀模块错误码   5005XX
+    public static final CodeMessage SECKILL_OVER = new CodeMessage(500500, "商品已经秒杀完毕");
+    public static final CodeMessage SECKILL_REPEATE = new CodeMessage(500510, "不能重复秒杀");
+    public static final CodeMessage SECKILL_FAIL = new CodeMessage(500511, "秒杀失败");
 
     private CodeMessage(int code, String msg) {
         this.code = code;

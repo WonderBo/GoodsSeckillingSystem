@@ -1,6 +1,7 @@
 package com.cqu.wb.service;
 
 import com.cqu.wb.dao.GoodsDao;
+import com.cqu.wb.domain.SeckillGoods;
 import com.cqu.wb.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,4 +35,18 @@ public class GoodsService {
     public GoodsVo getGoodsVoByGoodsId(long goodsId) {
         return goodsDao.getGoodsVoByGoodsId(goodsId);
     }
+
+    /**
+     *
+     * @param goodsVo
+     * @return
+     * @description 减少秒杀商品库存（存在GoodsVo到SeckillGoods到转化）
+     */
+    public boolean reduceStock(GoodsVo goodsVo) {
+        SeckillGoods seckillGoods = new SeckillGoods();
+        seckillGoods.setId(goodsVo.getId());
+        int result = goodsDao.reduceStock(seckillGoods);
+
+        return result > 0;
+    };
 }
