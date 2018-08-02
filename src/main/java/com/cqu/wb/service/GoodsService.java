@@ -44,7 +44,7 @@ public class GoodsService {
      */
     public boolean reduceStock(GoodsVo goodsVo) {
         SeckillGoods seckillGoods = new SeckillGoods();
-        seckillGoods.setId(goodsVo.getId());
+        seckillGoods.setGoodsId(goodsVo.getId());
         int result = goodsDao.reduceStock(seckillGoods);
 
         return result > 0;

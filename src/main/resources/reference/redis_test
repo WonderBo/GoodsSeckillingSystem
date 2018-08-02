@@ -1,0 +1,15 @@
+redis压测工具：redis-benchmark
+
+相关压力测试命令：
+
+redis-benchmark -h 127.0.0.1 -p 6379 -c 100 -n 100000
+100个并发连接，100000个请求
+
+redis-benchmark -h 127.0.0.1 -p 6379 -q -d 100
+存取大小为100字节的数据包
+
+redis-benchmark -t set,lpush -q -n 100000
+只测试某些操作的性能
+
+redis-benchmark -n 100000 -q script load “redis.call(‘set’,‘foo’,‘bar’)”
+只测试某些数值存取的性能
