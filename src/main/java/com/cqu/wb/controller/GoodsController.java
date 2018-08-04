@@ -67,6 +67,10 @@ public class GoodsController {
      * @param user
      * @return
      * @description 采用请求参数解析绑定的方式，从分布式Session中获取用户信息并绑定到方法入参中，然后跳转到商品列表页面
+     *
+     * 并发量：5000 * 10
+     * 优化前：QPS: 1267 load: 15 mysql
+     * 优化后：QPS: 2884, load: 5
      */
     @RequestMapping(value = "/to_list", method = RequestMethod.GET)
     public String listGoodsNew(Model model, User user) {

@@ -37,6 +37,10 @@ public class SeckillController {
      * @param goodsId
      * @return
      * @description 验证是否满足秒杀条件并处理秒杀请求（减库存、下订单、写入秒杀订单）
+     *
+     * 并发量：5000 * 10
+     * 优化前：QPS: 1306
+     * 优化后：QPS: 2114
      */
     @RequestMapping(value = "/do_seckill")
     public String seckill(Model model, User user, @RequestParam("goodsId")long goodsId) {
