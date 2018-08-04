@@ -15,4 +15,5 @@ public class UserKey extends BasePrefix {
     }
 
     public static UserKey tokenUserKey = new UserKey(DEFAULT_TOKEN_EXPIRE, "token");
+    public static UserKey idUserKey = new UserKey(0, "id");
 }

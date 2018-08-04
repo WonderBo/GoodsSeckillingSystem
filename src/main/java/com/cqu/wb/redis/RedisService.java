@@ -78,6 +78,31 @@ public class RedisService {
      *
      * @param keyPrefix
      * @param key
+     * @return
+     * @description 根据key在Redis中删除对应数据
+     */
+    public boolean delete(KeyPrefix keyPrefix, String key) {
+        // 输入验证
+        if(keyPrefix == null) {
+            return false;
+        }
+
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            String realKey = keyPrefix.getKeyPrefix() + key;
+            long result = jedis.del(realKey);
+
+            return result > 0;
+        } finally {
+            returnToPool(jedis);
+        }
+    }
+
+    /**
+     *
+     * @param keyPrefix
+     * @param key
      * @param <T>
      * @return
      * @description 判断Redis中对应的key是否存在

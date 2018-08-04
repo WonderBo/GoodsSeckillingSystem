@@ -27,6 +27,7 @@ public class UserService {
     @Autowired
     private UserDao userDao;
 
+    // Service只能访问自己对应的DAO，不能访问其他模块的DAO（比如：跨过缓存访问处理），如果有需要，则只能访问其他模块的Service
     @Autowired
     private RedisService redisService;
 
@@ -34,12 +35,47 @@ public class UserService {
      *
      * @param id
      * @return
-     * @description 根据用户id获取用户信息
+     * @description 使用对象级缓存，根据用户id获取用户信息，若缓存未命中，则访问数据库并进行缓存。
+     *              对象级缓存的粒度比较小，对象级缓存和页面级缓存主要区别在于：对象级缓存有效时间比较长，
+     *              为保证对象缓存数据的一致性，当数据发生更新，需要进行缓存失效管理（对应缓存数据进行更新或者修改操作），
+     *              而页面级缓存有效时间比较短，到达失效时间时Redis会自动删除失效缓存
      */
     public User getUserById(long id) {
-        // 从数据库中取信息
-        User user = userDao.getUserById(id);
+        // 访问缓存
+        User user = redisService.get(UserKey.idUserKey, "" + id, User.class);
+        if(user != null) {
+            return user;
+        }
+
+        // 缓存未命中则访问数据库，并进行缓存
+        user = userDao.getUserById(id);
+        if(user != null) {
+            redisService.set(UserKey.idUserKey, "" + id, user);
+        }
+
         return user;
+    }
+
+    public boolean updateUserPassword(String token, long id, String formPassword) {
+        // 根据用户id得到用户
+        User user = getUserById(id);
+        if(user == null) {
+            throw new GlobalException(CodeMessage.MOBILE_NOT_EXIT);
+        }
+
+        // 更新数据库（创建新对象进行增量更新，如果修改原对象进行全量更新会降低效率）
+        User updatedUser = new User();
+        updatedUser.setId(id);
+        updatedUser.setPassword(MD5Util.formPassToDBPass(formPassword, user.getSalt()));
+        userDao.updateUserPassword(updatedUser);
+
+        // 处理缓存（更新缓存只能进行全量更新，缓存更新相当于覆盖原记录，否则部分数据会丢失）
+        redisService.delete(UserKey.idUserKey, "" + id);    // 删除缓存对应记录
+        user.setPassword(updatedUser.getPassword());
+        // 由于分布式Session根据token在缓存中得到User，因此对应缓存记录只能覆盖，不能直接删除
+        redisService.set(UserKey.tokenUserKey, token, user);    // （全量）覆盖／修改缓存对应记录
+
+        return true;
     }
 
     /**
