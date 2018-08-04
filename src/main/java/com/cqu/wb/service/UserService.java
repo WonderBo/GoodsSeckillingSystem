@@ -56,6 +56,15 @@ public class UserService {
         return user;
     }
 
+    /**
+     *
+     * @param token
+     * @param id
+     * @param formPassword
+     * @return
+     * @description 更新用户密码操作：先更新数据库对应数据，再更新缓存数据
+     *              参考文章：http://blog.csdn.net/tTU1EvLDeLFq5btqiK/article/details/78693323
+     */
     public boolean updateUserPassword(String token, long id, String formPassword) {
         // 根据用户id得到用户
         User user = getUserById(id);

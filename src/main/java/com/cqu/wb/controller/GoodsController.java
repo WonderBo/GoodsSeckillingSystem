@@ -3,8 +3,10 @@ package com.cqu.wb.controller;
 import com.cqu.wb.domain.User;
 import com.cqu.wb.redis.GoodsKey;
 import com.cqu.wb.redis.RedisService;
+import com.cqu.wb.result.Result;
 import com.cqu.wb.service.GoodsService;
 import com.cqu.wb.service.UserService;
+import com.cqu.wb.vo.GoodsDetailVo;
 import com.cqu.wb.vo.GoodsVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,5 +224,45 @@ public class GoodsController {
         }
 
         return html;
+    }
+
+    /**
+     *
+     * @param user
+     * @param goodsId
+     * @return
+     * @description 前后端分离／页面静态化：后端页面提供数据获取接口，前端页面完全采用静态html实现，采用ajax异步请求后端接口
+     *              并获取数据，采用jQuery将数据填充页面。前后端分离／页面静态化将静态页面直接缓存在客户端浏览器上来进行优化。
+     */
+    @RequestMapping(value = "/to_detail_v3/{goodsId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<GoodsDetailVo> getGoodsDetailV3(User user, @PathVariable("goodsId") long goodsId) {
+
+        GoodsVo goodsVo = goodsService.getGoodsVoByGoodsId(goodsId);
+
+        long startTime = goodsVo.getStartDate().getTime();
+        long endTime = goodsVo.getEndDate().getTime();
+        long currentTime = System.currentTimeMillis();
+
+        int seckillStatus = 0;
+        int remainSeconds = 0;
+        if(currentTime < startTime) {       // 秒杀还没开始，需要进行倒计时
+            seckillStatus = 0;
+            remainSeconds = (int)((startTime - currentTime) / 1000);
+        } else if(currentTime > endTime) {  // 秒杀已经结束
+            seckillStatus = 2;
+            remainSeconds = -1;
+        } else {                            // 秒杀进行时
+            seckillStatus = 1;
+            remainSeconds = 0;
+        }
+
+        GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
+        goodsDetailVo.setGoodsVo(goodsVo);
+        goodsDetailVo.setRemainSeconds(remainSeconds);
+        goodsDetailVo.setSeckillStatus(seckillStatus);
+        goodsDetailVo.setUser(user);
+
+        return Result.success(goodsDetailVo);
     }
 }
