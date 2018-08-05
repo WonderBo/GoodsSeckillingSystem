@@ -54,6 +54,14 @@
      <tr>
      	<td>订单状态</td>  
         <td id="orderStatus">
+            <!--
+            <span th:if="${order.status eq 0}">未支付</span>
+            <span th:if="${order.status eq 1}">待发货</span>
+            <span th:if="${order.status eq 2}">已发货</span>
+            <span th:if="${order.status eq 3}">已收货</span>
+            <span th:if="${order.status eq 4}">已退款</span>
+            <span th:if="${order.status eq 5}">已完成</span>
+            -->
         </td>  
         <td>
         	<button class="btn btn-primary btn-block" type="submit" id="payButton">立即支付</button>
@@ -72,10 +80,12 @@
 </body>
 </html>
 <script>
+    // jQuery入口方法
     $(function(){
         getOrderDetail();
     })
 
+    // ajax请求订单详情业务接口获取数据
     function getOrderDetail(){
         var orderId = g_getQueryString("orderId");
         $.ajax({
@@ -97,11 +107,12 @@
         });
     }
 
+    // 逐层解析返回的json数据，并使用jQuery手动渲染静态页面
     function render(detail){
-        var goods = detail.goods;
+        var goodsVo = detail.goodsVo;
         var order = detail.order;
-        $("#goodsName").text(goods.goodsName);
-        $("#goodsImage").attr("src", goods.goodsImg);
+        $("#goodsName").text(goodsVo.goodsName);
+        $("#goodsImage").attr("src", goodsVo.goodsImage);
         $("#orderPrice").text(order.goodsPrice);
         $("#createDate").text(new Date(order.createDate).format("yyyy-MM-dd hh:mm:ss"));
         var status = "";
@@ -109,8 +120,15 @@
             status = "未支付"
         }else if(order.status == 1){
             status = "待发货";
+        }else if(order.status == 2){
+            status = "已发货";
+        }else if(order.status == 3){
+            status = "已收货";
+        }else if(order.status == 4){
+            status = "已退货";
+        }else if(order.status == 5){
+            status = "已完成";
         }
         $("#orderStatus").text(status);
-
     }
 </script>

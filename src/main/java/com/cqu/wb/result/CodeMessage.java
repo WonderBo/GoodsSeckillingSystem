@@ -21,7 +21,7 @@ public class CodeMessage {
     // 商品模块错误码   5003XX
 
     // 订单模块错误码   5004XX
-
+    public static final CodeMessage ORDER_NOT_EXIST = new CodeMessage(500410, "订单不存在");
     // 秒杀模块错误码   5005XX
     public static final CodeMessage SECKILL_OVER = new CodeMessage(500500, "商品已经秒杀完毕");
     public static final CodeMessage SECKILL_REPEATE = new CodeMessage(500510, "不能重复秒杀");

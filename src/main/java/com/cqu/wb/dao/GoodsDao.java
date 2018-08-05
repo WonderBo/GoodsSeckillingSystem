@@ -26,6 +26,8 @@ public interface GoodsDao {
             "where g.id = #{goodsId}")
     public GoodsVo getGoodsVoByGoodsId(@Param("goodsId") long goodsId);
 
+    // 解决商品卖超问题：设置stock_count > 0条件（更新操作数据库会加锁）
+    // 防止用户刷单（一个用户同时秒杀两个商品）：数据库为userId，goodsId添加一个唯一索引
     @Update("update seckill_goods " +
             "set stock_count = stock_count - 1 " +
             "where goods_id = #{goodsId} and stock_count > 0")
