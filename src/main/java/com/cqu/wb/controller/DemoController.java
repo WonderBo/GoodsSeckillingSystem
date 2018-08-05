@@ -1,6 +1,7 @@
 package com.cqu.wb.controller;
 
 import com.cqu.wb.domain.Demo;
+import com.cqu.wb.rabbitmq.RabbitMQSender;
 import com.cqu.wb.redis.DemoKey;
 import com.cqu.wb.redis.RedisService;
 import com.cqu.wb.result.CodeMessage;
@@ -22,8 +23,12 @@ public class DemoController {
 
     @Autowired
     private DemoService demoService;
+
     @Autowired
     private RedisService redisServer;
+
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
 
     /**
      *
@@ -108,5 +113,53 @@ public class DemoController {
         demo.setName("mike");
         boolean result = redisServer.set(DemoKey.idDemoKey, "1", demo);
         return Result.success(result);
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Direct模式）
+     */
+    @RequestMapping(value = "/mq/direct", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendDirectMessage() {
+        rabbitMQSender.sendDirect("Hello Direct RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Topic模式）
+     */
+    @RequestMapping(value = "/mq/topic", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendTopicMessage() {
+        rabbitMQSender.sendTopic("Hello Topic RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Fanout模式）
+     */
+    @RequestMapping(value = "/mq/fanout", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendFanoutMessage() {
+        rabbitMQSender.sendFanout("Hello Fanout RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Header模式）
+     */
+    @RequestMapping(value = "/mq/header", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendHeaderMessage() {
+        rabbitMQSender.sendHeaders("Hello Header RabbitMQ");
+        return Result.success("success");
     }
 }

@@ -1,6 +1,6 @@
 package com.cqu.wb.redis;
 
-import com.alibaba.fastjson.JSON;
+import com.cqu.wb.util.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -33,7 +33,7 @@ public class RedisService {
             jedis = jedisPool.getResource();    // 从连接池获取Jedis对象
             String realKey = keyPrefix.getKeyPrefix() + key;    // 生成真正的key
             String strVal = jedis.get(realKey);
-            T resultVal = stringToBean(strVal, clazz);
+            T resultVal = JSONUtil.stringToBean(strVal, clazz);
 
             return resultVal;
         } finally {
@@ -60,7 +60,7 @@ public class RedisService {
             jedis = jedisPool.getResource();
             String realKey = keyPrefix.getKeyPrefix() + key;
             int expireSeconds = keyPrefix.getExpireSeconds();
-            String strVal = beanTOString(value);
+            String strVal = JSONUtil.beanTOString(value);
 
             if(expireSeconds <= 0) {
                 jedis.set(realKey, strVal);                     // 在redis中设置永不过期的Key／Value对
@@ -170,48 +170,6 @@ public class RedisService {
             return jedis.decr(realKey);
         } finally {
             returnToPool(jedis);
-        }
-    }
-
-    /**
-     *
-     * @param str
-     * @param clazz
-     * @param <T>
-     * @return
-     * @description 将String类型转化为对象类型
-     */
-    public static <T> T stringToBean(String str, Class<T> clazz) {
-        // 基础类型及其封装类型判断（参数校验）
-        if(clazz == int.class || clazz == Integer.class) {
-            return (T)Integer.valueOf(str);
-        } else if(clazz == long.class || clazz == Long.class) {
-            return (T)Long.valueOf(str);
-        } else if(clazz == String.class) {
-            return (T)str;
-        } else {
-            return JSON.toJavaObject(JSON.parseObject(str), clazz);
-        }
-    }
-
-    /**
-     *
-     * @param value
-     * @param <T>
-     * @return
-     * @description 将对象类型转化为String类型
-     */
-    public static <T> String beanTOString(T value) {
-        // 基础类型及其封装类型判断（参数校验）
-        Class<?> clazz = value.getClass();
-        if(clazz == int.class || clazz == Integer.class) {
-            return "" + value;
-        } else if(clazz == long.class || clazz == Long.class) {
-            return "" + value;
-        } else if(clazz == String.class) {
-            return (String)value;
-        } else {
-            return JSON.toJSONString(value);
         }
     }
 

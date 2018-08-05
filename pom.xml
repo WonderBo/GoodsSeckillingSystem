@@ -36,7 +36,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--引入spring-boot thymeleaf依赖-->
+		<!--引入spring-boot Thymeleaf依赖-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -86,6 +86,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!--引入spring-boot RabbitMQ依赖-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
 		<!--在编译阶段引入tomcat组件，以方便打成war包发布运行-->
