@@ -225,7 +225,6 @@ public class GoodsController {
 
         return html;
     }
-
     /**
      *
      * @param user

@@ -66,7 +66,7 @@
         		<div class="form-inline">
 		        	<img id="verifyCodeImg" width="80" height="32"  style="display:none" onclick="refreshVerifyCode()"/>
 		        	<input id="verifyCode"  class="form-control" style="display:none"/>
-		        	<button class="btn btn-primary" type="button" id="buyButton"onclick="getSeckillPath()">立即秒杀</button>
+		        	<button class="btn btn-primary" type="button" id="buyButton"onclick="doSeckill()">立即秒杀</button>
         		</div>
         	</div>
         	<input type="hidden" name="goodsId"  id="goodsId" />
@@ -94,7 +94,7 @@
         getDetail();
     });
 
-    // ajax请求业务接口获取数据
+    // ajax请求商品详情业务接口获取数据
     function getDetail(){
         var goodsId = g_getQueryString("goodsId");  // 获取前一页面请求中的对应参数
         $.ajax({
@@ -162,6 +162,29 @@
         }
     }
 
+    // ajax请求秒杀业务接口获取数据
+    function doSeckill(/*path*/){
+        $.ajax({
+            //url:"/seckill/"+path+"/do_seckill",
+            url:"/seckill/do_seckill_v2",
+            type:"POST",
+            data:{
+                goodsId:$("#goodsId").val()
+            },
+            success:function(data){
+                if(data.code == 0){
+                    window.location.href="/order_detail.htm?orderId="+data.data.id;
+                    //getSeckillResult($("#goodsId").val());
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg("客户端请求有误");
+            }
+        });
+    }
+
     function getSeckillPath(){
         var goodsId = $("#goodsId").val();
         g_showLoading();
@@ -220,28 +243,6 @@
                 layer.msg("客户端请求有误");
             }
         });
-    }
-
-    function doSeckill(path){
-        $.ajax({
-            url:"/seckill/"+path+"/do_seckill",
-            type:"POST",
-            data:{
-                goodsId:$("#goodsId").val()
-            },
-            success:function(data){
-                if(data.code == 0){
-                    //window.location.href="/order_detail.htm?orderId="+data.data.id;
-                    getSeckillResult($("#goodsId").val());
-                }else{
-                    layer.msg(data.msg);
-                }
-            },
-            error:function(){
-                layer.msg("客户端请求有误");
-            }
-        });
-
     }
 
     function refreshVerifyCode(){
