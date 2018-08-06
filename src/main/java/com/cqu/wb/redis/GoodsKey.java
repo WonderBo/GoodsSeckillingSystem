@@ -14,4 +14,5 @@ public class GoodsKey extends BasePrefix {
 
     public static GoodsKey goodsListHtmlGoodsKey = new GoodsKey(DEFAULT_HTML_EXPIRE, "goodsListHtml");
     public static GoodsKey goodsDetailHtmlGoodsKey = new GoodsKey(DEFAULT_HTML_EXPIRE, "goodsDetailHtml");
+    public static GoodsKey seckillGoodsStockGoodsKey = new GoodsKey(0, "seckillGoodsStock");
 }

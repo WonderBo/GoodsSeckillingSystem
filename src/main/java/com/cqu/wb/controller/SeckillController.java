@@ -3,12 +3,17 @@ package com.cqu.wb.controller;
 import com.cqu.wb.domain.Order;
 import com.cqu.wb.domain.SeckillOrder;
 import com.cqu.wb.domain.User;
+import com.cqu.wb.rabbitmq.SeckillMQMessage;
+import com.cqu.wb.rabbitmq.SeckillMQSender;
+import com.cqu.wb.redis.GoodsKey;
+import com.cqu.wb.redis.RedisService;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.result.Result;
 import com.cqu.wb.service.GoodsService;
 import com.cqu.wb.service.OrderService;
 import com.cqu.wb.service.SeckillService;
 import com.cqu.wb.vo.GoodsVo;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,12 +22,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.List;
+
 /**
  * Created by jingquan on 2018/8/1.
  */
 @Controller
 @RequestMapping(value = "/seckill")
-public class SeckillController {
+public class SeckillController implements InitializingBean {
 
     @Autowired
     private GoodsService goodsService;
@@ -32,6 +39,29 @@ public class SeckillController {
 
     @Autowired
     private SeckillService seckillService;
+
+    @Autowired
+    private RedisService redisService;
+
+    @Autowired
+    private SeckillMQSender seckillMQSender;
+
+    /**
+     *
+     * @throws Exception
+     * @description 在系统初始化时将秒杀商品库存数量添加到缓存中
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        List<GoodsVo> goodsVoList = goodsService.listGoodsVo();
+        if(goodsVoList == null || goodsVoList.size() == 0) {
+            return;
+        }
+
+        for(GoodsVo goodsVo : goodsVoList) {
+            redisService.set(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsVo.getId(), goodsVo.getStockCount());
+        }
+    }
 
     /**
      *
@@ -94,7 +124,7 @@ public class SeckillController {
             return Result.error(CodeMessage.SESSION_ERROR);
         }
         model.addAttribute("user", user);
-        //判断库存剩余数量
+        // 判断库存剩余数量
         GoodsVo goodsVo = goodsService.getGoodsVoByGoodsId(goodsId);
         int count = goodsVo.getStockCount();
         if(count <= 0) {
@@ -112,5 +142,66 @@ public class SeckillController {
         Order order = seckillService.seckill(user, goodsVo);
 
         return Result.success(order);
+    }
+
+    /**
+     *
+     * @param model
+     * @param user
+     * @param goodsId
+     * @return
+     * @descriotion 使用缓存（缓存库存、已秒杀订单），消息队列（异步处理秒杀请求）来减少对数据库对访问，从而优化秒杀接口性能
+     */
+    @RequestMapping(value = "/do_seckill_v3", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<Integer> seckillV3(Model model, User user, @RequestParam("goodsId")long goodsId) {
+        // 判断用户是否登录
+        if(user == null) {
+            return Result.error(CodeMessage.SESSION_ERROR);
+        }
+        model.addAttribute("user", user);
+
+        // 预减库存
+        long stock = redisService.decr(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsId);
+        if(stock < 0) {
+            return Result.error(CodeMessage.SECKILL_OVER);
+        }
+
+        // 判断是否秒杀重复
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdGoodsId(user.getId(), goodsId);
+        if(seckillOrder != null) {
+            return Result.error(CodeMessage.SECKILL_REPEATE);
+        }
+
+        // 构造并发送秒杀消息进入队列
+        SeckillMQMessage seckillMQMessage = new SeckillMQMessage();
+        seckillMQMessage.setUser(user);
+        seckillMQMessage.setGoodsVoId(goodsId);
+        seckillMQSender.sendSeckillMessage(seckillMQMessage);
+
+        // 不直接返回秒杀结果，而是返回排队中
+        return Result.success(0);
+    }
+
+    /**
+     *
+     * @param model
+     * @param user
+     * @param goodsId
+     * @return
+     * @description 获取异步秒杀结果，结果为查询得到的订单号则秒杀成功，结果为-1则秒杀失败，结果为0则还在排队中
+     */
+    @RequestMapping(value = "/result", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Long> seckillResult(Model model, User user, @RequestParam("goodsId")long goodsId) {
+        // 判断用户是否登录
+        if(user == null) {
+            return Result.error(CodeMessage.SESSION_ERROR);
+        }
+        model.addAttribute("user", user);
+
+        long result = seckillService.getSeckillResult(user.getId(), goodsId);
+
+        return Result.success(result);
     }
 }
