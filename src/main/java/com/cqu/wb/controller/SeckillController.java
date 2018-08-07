@@ -6,7 +6,9 @@ import com.cqu.wb.domain.User;
 import com.cqu.wb.rabbitmq.SeckillMQMessage;
 import com.cqu.wb.rabbitmq.SeckillMQSender;
 import com.cqu.wb.redis.GoodsKey;
+import com.cqu.wb.redis.OrderKey;
 import com.cqu.wb.redis.RedisService;
+import com.cqu.wb.redis.SeckillKey;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.result.Result;
 import com.cqu.wb.service.GoodsService;
@@ -22,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jingquan on 2018/8/1.
@@ -46,10 +50,13 @@ public class SeckillController implements InitializingBean {
     @Autowired
     private SeckillMQSender seckillMQSender;
 
+    // 内存标记：保存各个秒杀商品是否已经秒杀完毕
+    private Map<Long, Boolean> localSeckillGoodsOverMap = new HashMap<Long, Boolean>();
+
     /**
      *
      * @throws Exception
-     * @description 在系统初始化时将秒杀商品库存数量添加到缓存中
+     * @description 在系统初始化时将秒杀商品库存数量添加到缓存中，并进行本地内存标记
      */
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -60,7 +67,29 @@ public class SeckillController implements InitializingBean {
 
         for(GoodsVo goodsVo : goodsVoList) {
             redisService.set(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsVo.getId(), goodsVo.getStockCount());
+            localSeckillGoodsOverMap.put(goodsVo.getId(), false);
         }
+    }
+
+    /**
+     *
+     * @return
+     * @description 重置脚本：每次测试系统时先进行重置，包括：内存标记，缓存，数据库
+     */
+    @RequestMapping(value = "/reset", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Boolean> resetSystem() {
+        List<GoodsVo> goodsVoList = goodsService.listGoodsVo();
+        for(GoodsVo goodsVo : goodsVoList) {
+            goodsVo.setStockCount(10);
+            redisService.set(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsVo.getId(), 10);
+            localSeckillGoodsOverMap.put(goodsVo.getId(), false);
+        }
+        redisService.delete(OrderKey.userIdGoodsIdOrderKey);
+        redisService.delete(SeckillKey.isGoodsSeckillOverSeckillKey);
+        seckillService.resetDB(goodsVoList);
+
+        return Result.success(true);
     }
 
     /**
@@ -161,9 +190,16 @@ public class SeckillController implements InitializingBean {
         }
         model.addAttribute("user", user);
 
+        // 内存标记：判断秒杀商品是否已经秒杀完毕，减少缓存到访问（存在网络带宽消耗）
+        boolean isSeckillGoodsOver = localSeckillGoodsOverMap.get(goodsId);
+        if(isSeckillGoodsOver == true) {
+            return Result.error(CodeMessage.SECKILL_OVER);
+        }
+
         // 预减库存
         long stock = redisService.decr(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsId);
         if(stock < 0) {
+            localSeckillGoodsOverMap.put(goodsId, true);    // 更新内存标记，后面到请求将不会访问缓存
             return Result.error(CodeMessage.SECKILL_OVER);
         }
 

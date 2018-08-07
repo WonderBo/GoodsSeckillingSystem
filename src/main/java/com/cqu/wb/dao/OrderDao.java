@@ -29,4 +29,10 @@ public interface OrderDao {
             "from `order` " +
             "where id = #{orderId}")
     public Order getOrderById(@Param("orderId")long orderId);
+
+    @Delete("delete from `order`")
+    public void deleteOrders();
+
+    @Delete("delete from seckill_order")
+    public void deleteSeckillOrders();
 }

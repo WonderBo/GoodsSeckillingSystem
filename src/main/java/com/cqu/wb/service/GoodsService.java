@@ -48,5 +48,20 @@ public class GoodsService {
         int result = goodsDao.reduceStock(seckillGoods);
 
         return result > 0;
-    };
+    }
+
+    /**
+     *
+     * @param goodsVoList
+     * @description 重置秒杀商品库存
+     */
+    public void resetStock(List<GoodsVo> goodsVoList) {
+        for(GoodsVo goodsVo : goodsVoList) {
+            SeckillGoods seckillGoods = new SeckillGoods();
+            seckillGoods.setGoodsId(goodsVo.getId());
+            seckillGoods.setStockCount(goodsVo.getStockCount());
+
+            goodsDao.resetStock(seckillGoods);
+        }
+    }
 }

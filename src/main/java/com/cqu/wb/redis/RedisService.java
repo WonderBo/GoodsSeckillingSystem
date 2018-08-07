@@ -5,6 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jingquan on 2018/7/26.
@@ -102,6 +107,37 @@ public class RedisService {
     /**
      *
      * @param keyPrefix
+     * @return
+     * @description 在Redis中删除所有包含对应前缀（模糊匹配）的数据
+     */
+    public boolean delete(KeyPrefix keyPrefix) {
+        // 输入验证
+        if(keyPrefix == null) {
+            return false;
+        }
+
+        List<String> keyList = scanKeys(keyPrefix.getKeyPrefix());
+        if(keyList == null || keyList.size() <= 0) {
+            return true;
+        }
+
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            jedis.del(keyList.toArray(new String[0]));
+
+            return true;
+        } catch (final Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            returnToPool(jedis);
+        }
+    }
+
+    /**
+     *
+     * @param keyPrefix
      * @param key
      * @param <T>
      * @return
@@ -168,6 +204,39 @@ public class RedisService {
             String realKey = keyPrefix.getKeyPrefix() + key;
 
             return jedis.decr(realKey);
+        } finally {
+            returnToPool(jedis);
+        }
+    }
+
+    /**
+     *
+     * @param key
+     * @return
+     * @description 在Redis中对Key进行模糊匹配查询并封装到List中
+     */
+    private List<String> scanKeys(String key) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            List<String> keyList = new ArrayList<String>();
+
+            String cursor = "0";
+            ScanParams scanParams = new ScanParams();
+            scanParams.match("*" + key + "*");
+            scanParams.count(100);
+            do {
+                ScanResult<String> scanResult = jedis.scan(cursor, scanParams);
+                List<String> resultList = scanResult.getResult();
+                if(resultList != null && resultList.size() > 0) {
+                    keyList.addAll(resultList);
+                }
+
+                // 处理cursor
+                cursor = scanResult.getStringCursor();
+            } while(!cursor.equals("0"));
+
+            return keyList;
         } finally {
             returnToPool(jedis);
         }

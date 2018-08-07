@@ -36,83 +36,83 @@ public class RabbitMQConfig {
      * @return
      * @description Direct模式交换机（Exchange）与消息队列进行绑定
      */
-    @Bean
-    public Queue directQueue() {
-        return new Queue(DIRECT_QUEUE, true);
-    }
+//    @Bean
+//    public Queue directQueue() {
+//        return new Queue(DIRECT_QUEUE, true);
+//    }
 
     /**
      *
      * @return
      * @description Topic模式交换机（Exchange）与消息队列进行绑定
      */
-    @Bean
-    public TopicExchange topicExchange() {
-        return new TopicExchange(TOPIC_EXCHANGE);
-    }
-    @Bean
-    public Queue topicQueue1() {
-        return new Queue(TOPIC_QUEUE_1, true);
-    }
-    @Bean
-    public Binding topicBinding1() {
-        return BindingBuilder.bind(topicQueue1()).to(topicExchange()).with("Topic.Routing.Key.1");
-    }
-    @Bean
-    public Queue topicQueue2() {
-        return new Queue(TOPIC_QUEUE_2, true);
-    }
-    // *表示一个单词，#表示任意数量（零个或多个）单词，每个部分用.分开
-    @Bean
-    public Binding topicBinding2() {
-        return BindingBuilder.bind(topicQueue2()).to(topicExchange()).with("Topic.Routing.Key.#");
-    }
+//    @Bean
+//    public TopicExchange topicExchange() {
+//        return new TopicExchange(TOPIC_EXCHANGE);
+//    }
+//    @Bean
+//    public Queue topicQueue1() {
+//        return new Queue(TOPIC_QUEUE_1, true);
+//    }
+//    @Bean
+//    public Binding topicBinding1() {
+//        return BindingBuilder.bind(topicQueue1()).to(topicExchange()).with("Topic.Routing.Key.1");
+//    }
+//    @Bean
+//    public Queue topicQueue2() {
+//        return new Queue(TOPIC_QUEUE_2, true);
+//    }
+//    // *表示一个单词，#表示任意数量（零个或多个）单词，每个部分用.分开
+//    @Bean
+//    public Binding topicBinding2() {
+//        return BindingBuilder.bind(topicQueue2()).to(topicExchange()).with("Topic.Routing.Key.#");
+//    }
 
     /**
      *
      * @return
      * @description Fanout模式交换机（Exchange）与消息队列进行绑定
      */
-    @Bean
-    public FanoutExchange fanoutExchange() {
-        return new FanoutExchange(FANOUT_EXCHANGE);
-    }
-    @Bean
-    public Queue fanoutQueue1() {
-        return new Queue(FANOUT_QUEUE_1, true);
-    }
-    @Bean
-    public Binding fanoutBinding1() {
-        return BindingBuilder.bind(fanoutQueue1()).to(fanoutExchange());
-    }
-    @Bean
-    public Queue fanoutQueue2() {
-        return new Queue(FANOUT_QUEUE_2, true);
-    }
-    @Bean
-    public Binding fanoutBinding2() {
-        return BindingBuilder.bind(fanoutQueue2()).to(fanoutExchange());
-    }
+//    @Bean
+//    public FanoutExchange fanoutExchange() {
+//        return new FanoutExchange(FANOUT_EXCHANGE);
+//    }
+//    @Bean
+//    public Queue fanoutQueue1() {
+//        return new Queue(FANOUT_QUEUE_1, true);
+//    }
+//    @Bean
+//    public Binding fanoutBinding1() {
+//        return BindingBuilder.bind(fanoutQueue1()).to(fanoutExchange());
+//    }
+//    @Bean
+//    public Queue fanoutQueue2() {
+//        return new Queue(FANOUT_QUEUE_2, true);
+//    }
+//    @Bean
+//    public Binding fanoutBinding2() {
+//        return BindingBuilder.bind(fanoutQueue2()).to(fanoutExchange());
+//    }
 
     /**
      *
      * @return
      * @description Header模式交换机（Exchange）与消息队列进行绑定
      */
-    @Bean
-    public HeadersExchange headersExchange() {
-        return new HeadersExchange(HEADERS_EXCHANGE);
-    }
-    @Bean
-    public Queue headersQueue() {
-        return new Queue(HEADERS_QUEUE, true);
-    }
-    @Bean
-    public Binding headersBinding() {
-        // 相比Direct交换机，Header交换机的优势是匹配的规则不被限定为字符串(String)
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("FILTER_HEADER_KEY_1", "FILTER_HEADER_VALUE_1");
-        map.put("FILTER_HEADER_KEY_2", "FILTER_HEADER_VALUE_2");
-        return BindingBuilder.bind(headersQueue()).to(headersExchange()).whereAll(map).match();
-    }
+//    @Bean
+//    public HeadersExchange headersExchange() {
+//        return new HeadersExchange(HEADERS_EXCHANGE);
+//    }
+//    @Bean
+//    public Queue headersQueue() {
+//        return new Queue(HEADERS_QUEUE, true);
+//    }
+//    @Bean
+//    public Binding headersBinding() {
+//        // 相比Direct交换机，Header交换机的优势是匹配的规则不被限定为字符串(String)
+//        Map<String, Object> map = new HashMap<String, Object>();
+//        map.put("FILTER_HEADER_KEY_1", "FILTER_HEADER_VALUE_1");
+//        map.put("FILTER_HEADER_KEY_2", "FILTER_HEADER_VALUE_2");
+//        return BindingBuilder.bind(headersQueue()).to(headersExchange()).whereAll(map).match();
+//    }
 }

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Created by jingquan on 2018/8/1.
  */
@@ -83,5 +85,15 @@ public class SeckillService {
      */
     private boolean getSeckillGoodsOver(long goodsVoId) {
         return redisService.exists(SeckillKey.isGoodsSeckillOverSeckillKey, "" + goodsVoId);
+    }
+
+    /**
+     *
+     * @param goodsVoList
+     * @descrption 重置数据库：重置秒杀商品库存，删除订单和秒杀订单
+     */
+    public void resetDB(List<GoodsVo> goodsVoList) {
+        goodsService.resetStock(goodsVoList);
+        orderService.deleteOrders();
     }
 }

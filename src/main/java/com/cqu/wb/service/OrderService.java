@@ -81,4 +81,12 @@ public class OrderService {
     public Order getOrderById(long orderId) {
         return orderDao.getOrderById(orderId);
     }
+
+    /**
+     * @description 删除订单表和秒杀订单表所有记录
+     */
+    public void deleteOrders() {
+        orderDao.deleteOrders();
+        orderDao.deleteSeckillOrders();
+    }
 }

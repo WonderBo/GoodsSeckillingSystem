@@ -32,4 +32,9 @@ public interface GoodsDao {
             "set stock_count = stock_count - 1 " +
             "where goods_id = #{goodsId} and stock_count > 0")
     public int reduceStock(SeckillGoods seckillGoods);
+
+    @Update("update seckill_goods " +
+            "set stock_count = #{stockCount} " +
+            "where goods_id = #{goodsId}")
+    public int resetStock(SeckillGoods seckillGoods);
 }
