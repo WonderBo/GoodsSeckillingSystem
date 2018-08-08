@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Created by jingquan on 2018/8/5.
@@ -35,6 +36,7 @@ public class OrderController {
      * @deacription 获取订单信息与商品信息后进行封装，订单详情页ajax请求该接口得到相关数据用于前后端分离／页面静态化
      */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    @ResponseBody
     public Result<OrderDetailVo> orderDetail(User user, @RequestParam("orderId") long orderId) {
         if(user == null) {
             return Result.error(CodeMessage.SESSION_ERROR);

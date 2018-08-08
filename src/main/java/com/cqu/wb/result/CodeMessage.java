@@ -11,6 +11,8 @@ public class CodeMessage {
     // 通用错误码   5001XX
     public static final CodeMessage SERVER_ERROR = new CodeMessage(500100, "服务端异常");
     public static final CodeMessage BIND_ERROR = new CodeMessage(500110, "参数校验异常：%s");
+    public static final CodeMessage ILLEGAL_REQUEST = new CodeMessage(500111, "非法请求");
+    public static final CodeMessage VERIFY_ERROR = new CodeMessage(500512, "验证码结果错误");
     // 登录模块错误码   5002XX
     public static final CodeMessage SESSION_ERROR = new CodeMessage(500210, "Session不存在或者已经失效");
     public static final CodeMessage PASSWORD_EMPTY = new CodeMessage(500211, "登录密码不能为空");

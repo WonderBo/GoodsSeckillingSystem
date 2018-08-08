@@ -19,11 +19,12 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,14 +173,13 @@ public class SeckillController implements InitializingBean {
 
         return Result.success(order);
     }
-
     /**
      *
      * @param model
      * @param user
      * @param goodsId
      * @return
-     * @descriotion 使用缓存（缓存库存、已秒杀订单），消息队列（异步处理秒杀请求）来减少对数据库对访问，从而优化秒杀接口性能
+     * @descriotion 使用缓存（缓存库存、已秒杀订单），消息队列（异步处理秒杀请求），内存标记来减少对数据库对访问，从而优化秒杀接口性能
      */
     @RequestMapping(value = "/do_seckill_v3", method = RequestMethod.POST)
     @ResponseBody
@@ -217,6 +217,115 @@ public class SeckillController implements InitializingBean {
 
         // 不直接返回秒杀结果，而是返回排队中
         return Result.success(0);
+    }
+    /**
+     *
+     * @param model
+     * @param user
+     * @param goodsId
+     * @return
+     * @description 安全优化后（隐藏秒杀地址）的秒杀接口
+     */
+    @RequestMapping(value = "/{seckillPath}/do_seckill_v4", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<Integer> seckillV4(Model model, User user, @RequestParam("goodsId")long goodsId,
+                                     @PathVariable("seckillPath") String seckillPath) {
+        // 判断用户是否登录
+        if(user == null) {
+            return Result.error(CodeMessage.SESSION_ERROR);
+        }
+        model.addAttribute("user", user);
+
+        // 验证秒杀地址
+        boolean checkSeckillPath = seckillService.checkSeckillPath(user, goodsId, seckillPath);
+        if(checkSeckillPath == false) {
+            return Result.error(CodeMessage.ILLEGAL_REQUEST);
+        }
+
+        // 内存标记：判断秒杀商品是否已经秒杀完毕，减少缓存到访问（存在网络带宽消耗）
+        boolean isSeckillGoodsOver = localSeckillGoodsOverMap.get(goodsId);
+        if(isSeckillGoodsOver == true) {
+            return Result.error(CodeMessage.SECKILL_OVER);
+        }
+
+        // 预减库存
+        long stock = redisService.decr(GoodsKey.seckillGoodsStockGoodsKey, "" + goodsId);
+        if(stock < 0) {
+            localSeckillGoodsOverMap.put(goodsId, true);    // 更新内存标记，后面到请求将不会访问缓存
+            return Result.error(CodeMessage.SECKILL_OVER);
+        }
+
+        // 判断是否秒杀重复
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdGoodsId(user.getId(), goodsId);
+        if(seckillOrder != null) {
+            return Result.error(CodeMessage.SECKILL_REPEATE);
+        }
+
+        // 构造并发送秒杀消息进入队列
+        SeckillMQMessage seckillMQMessage = new SeckillMQMessage();
+        seckillMQMessage.setUser(user);
+        seckillMQMessage.setGoodsVoId(goodsId);
+        seckillMQSender.sendSeckillMessage(seckillMQMessage);
+
+        // 不直接返回秒杀结果，而是返回排队中
+        return Result.success(0);
+    }
+
+    /**
+     *
+     * @param response
+     * @param user
+     * @param goodsId
+     * @return
+     * @description 获取秒杀验证码图片（请求的是图片地址，实际通过response返回的是图片的'流'）
+     */
+    @RequestMapping(value = "/verifyCode", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> getSeckillVerifyCode(HttpServletResponse response, User user, @RequestParam("goodsId")long goodsId) {
+        // 判断用户是否登录
+        if(user == null) {
+            return Result.error(CodeMessage.SESSION_ERROR);
+        }
+
+        try {
+            BufferedImage bufferedImage = seckillService.createSeckillVerifyCode(user, goodsId);
+            OutputStream outputStream = response.getOutputStream();
+            ImageIO.write(bufferedImage, "JPEG", outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(CodeMessage.SECKILL_FAIL);
+        }
+    }
+
+    /**
+     *
+     * @param user
+     * @param goodsId
+     * @return
+     * @description 发送秒杀请求前需要先进行验证码判断，再请求动态秒杀地址
+     */
+    @RequestMapping(value = "/path", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> getSeckillPath(User user, @RequestParam("goodsId")long goodsId,
+                                         @RequestParam(value = "verifyAnswer", defaultValue = "0") int verifyAnswer) {
+        // 判断用户是否登录
+        if(user == null) {
+            return Result.error(CodeMessage.SESSION_ERROR);
+        }
+
+        // 验证码结果判断
+        boolean checkResult = seckillService.checkVerifyAnswer(user, goodsId, verifyAnswer);
+        if(checkResult == false) {
+            return Result.error(CodeMessage.VERIFY_ERROR);
+        }
+
+        String seckillPath = seckillService.createSeckillPath(user, goodsId);
+
+        return Result.success(seckillPath);
     }
 
     /**
