@@ -57,7 +57,7 @@
         </td>
         <td>
             <!--
-        	<form id="seckillForm" method="post" action="/seckill/do_seckill">
+        	<form id="seckillForm" method="post" actioseckill_structurekill/do_seckill">
         		<button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>
         		<input type="hidden" name="goodsId"  id="goodsId" />
         	</form>
@@ -165,7 +165,7 @@
     // ajax请求秒杀业务接口获取数据
     function doSeckill(/*path*/){
         $.ajax({
-            //url:"/seckill/"+path+"/do_seckill",
+            //url:"/seckill_structure.sql/"+path+"/do_seckill",
             url:"/seckill/do_seckill_v3",
             type:"POST",
             data:{

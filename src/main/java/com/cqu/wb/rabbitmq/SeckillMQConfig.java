@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SeckillMQConfig {
 
-    public static final String SECKILL_QUEUE = "seckill.queue";
+    public static final String SECKILL_QUEUE = "seckill_structure.sql.queue";
 
     /**
      *
