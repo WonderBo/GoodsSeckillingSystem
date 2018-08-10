@@ -31,51 +31,51 @@ public class RabbitMQSender {
      * @param object
      * @description 消息生产者向消息队列发送消息（Direct模式）
      */
-//    public void sendDirect(Object object) {
-//        String message = JSONUtil.beanTOString(object);
-//        amqpTemplate.convertAndSend(RabbitMQConfig.DIRECT_QUEUE, message);
-//
-//        logger.info("向 DIRECT_QUEUE 发送消息：" + message);
-//    }
+    public void sendDirect(Object object) {
+        String message = JSONUtil.beanTOString(object);
+        amqpTemplate.convertAndSend(RabbitMQConfig.DIRECT_QUEUE, message);
+
+        logger.info("向 DIRECT_QUEUE 发送消息：" + message);
+    }
 
     /**
      *
      * @param object
      * @description 消息生产者向消息队列发送消息（Topic模式）
      */
-//    public void sendTopic(Object object) {
-//        String message = JSONUtil.beanTOString(object);
-//        amqpTemplate.convertAndSend(RabbitMQConfig.TOPIC_EXCHANGE, "Topic.Routing.Key.1", message + "_1");
-//        amqpTemplate.convertAndSend(RabbitMQConfig.TOPIC_EXCHANGE, "Topic.Routing.Key.2", message + "_2");
-//
-//        logger.info("向 TOPIC_EXCHANGE 发送消息：" + message);
-//    }
+    public void sendTopic(Object object) {
+        String message = JSONUtil.beanTOString(object);
+        amqpTemplate.convertAndSend(RabbitMQConfig.TOPIC_EXCHANGE, "Topic.Routing.Key.1", message + "_1");
+        amqpTemplate.convertAndSend(RabbitMQConfig.TOPIC_EXCHANGE, "Topic.Routing.Key.2", message + "_2");
+
+        logger.info("向 TOPIC_EXCHANGE 发送消息：" + message);
+    }
 
     /**
      *
      * @param object
      * @description 消息生产者向消息队列发送消息（Fanout模式）
      */
-//    public void sendFanout(Object object) {
-//        String message = JSONUtil.beanTOString(object);
-//        amqpTemplate.convertAndSend(RabbitMQConfig.FANOUT_EXCHANGE, "", message);
-//
-//        logger.info("向 FANOUT_EXCHANGE 发送消息：" + message);
-//    }
+    public void sendFanout(Object object) {
+        String message = JSONUtil.beanTOString(object);
+        amqpTemplate.convertAndSend(RabbitMQConfig.FANOUT_EXCHANGE, "", message);
+
+        logger.info("向 FANOUT_EXCHANGE 发送消息：" + message);
+    }
 
     /**
      *
      * @param object
      * @description 消息生产者向消息队列发送消息（Header模式）
      */
-//    public void sendHeaders(Object object) {
-//        String message = JSONUtil.beanTOString(object);
-//        MessageProperties messageProperties = new MessageProperties();
-//        messageProperties.setHeader("FILTER_HEADER_KEY_1", "FILTER_HEADER_VALUE_1");
-//        messageProperties.setHeader("FILTER_HEADER_KEY_2", "FILTER_HEADER_VALUE_2");
-//        Message messageObject = new Message(message.getBytes(), messageProperties);
-//        amqpTemplate.convertAndSend(RabbitMQConfig.HEADERS_EXCHANGE, "", messageObject);
-//
-//        logger.info("向 HEADERS_EXCHANGE 发送消息：" + message);
-//    }
+    public void sendHeaders(Object object) {
+        String message = JSONUtil.beanTOString(object);
+        MessageProperties messageProperties = new MessageProperties();
+        messageProperties.setHeader("FILTER_HEADER_KEY_1", "FILTER_HEADER_VALUE_1");
+        messageProperties.setHeader("FILTER_HEADER_KEY_2", "FILTER_HEADER_VALUE_2");
+        Message messageObject = new Message(message.getBytes(), messageProperties);
+        amqpTemplate.convertAndSend(RabbitMQConfig.HEADERS_EXCHANGE, "", messageObject);
+
+        logger.info("向 HEADERS_EXCHANGE 发送消息：" + message);
+    }
 }

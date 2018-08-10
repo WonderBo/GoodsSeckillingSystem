@@ -115,51 +115,51 @@ public class DemoController {
         return Result.success(result);
     }
 
-//    /**
-//     *
-//     * @return
-//     * @description 向消息队列发送消息（Direct模式）
-//     */
-//    @RequestMapping(value = "/mq/direct", method = RequestMethod.GET)
-//    @ResponseBody
-//    public Result<String> sendDirectMessage() {
-//        rabbitMQSender.sendDirect("Hello Direct RabbitMQ");
-//        return Result.success("success");
-//    }
-//
-//    /**
-//     *
-//     * @return
-//     * @description 向消息队列发送消息（Topic模式）
-//     */
-//    @RequestMapping(value = "/mq/topic", method = RequestMethod.GET)
-//    @ResponseBody
-//    public Result<String> sendTopicMessage() {
-//        rabbitMQSender.sendTopic("Hello Topic RabbitMQ");
-//        return Result.success("success");
-//    }
-//
-//    /**
-//     *
-//     * @return
-//     * @description 向消息队列发送消息（Fanout模式）
-//     */
-//    @RequestMapping(value = "/mq/fanout", method = RequestMethod.GET)
-//    @ResponseBody
-//    public Result<String> sendFanoutMessage() {
-//        rabbitMQSender.sendFanout("Hello Fanout RabbitMQ");
-//        return Result.success("success");
-//    }
-//
-//    /**
-//     *
-//     * @return
-//     * @description 向消息队列发送消息（Header模式）
-//     */
-//    @RequestMapping(value = "/mq/header", method = RequestMethod.GET)
-//    @ResponseBody
-//    public Result<String> sendHeaderMessage() {
-//        rabbitMQSender.sendHeaders("Hello Header RabbitMQ");
-//        return Result.success("success");
-//    }
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Direct模式）
+     */
+    @RequestMapping(value = "/mq/direct", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendDirectMessage() {
+        rabbitMQSender.sendDirect("Hello Direct RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Topic模式）
+     */
+    @RequestMapping(value = "/mq/topic", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendTopicMessage() {
+        rabbitMQSender.sendTopic("Hello Topic RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Fanout模式）
+     */
+    @RequestMapping(value = "/mq/fanout", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendFanoutMessage() {
+        rabbitMQSender.sendFanout("Hello Fanout RabbitMQ");
+        return Result.success("success");
+    }
+
+    /**
+     *
+     * @return
+     * @description 向消息队列发送消息（Header模式）
+     */
+    @RequestMapping(value = "/mq/header", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> sendHeaderMessage() {
+        rabbitMQSender.sendHeaders("Hello Header RabbitMQ");
+        return Result.success("success");
+    }
 }
