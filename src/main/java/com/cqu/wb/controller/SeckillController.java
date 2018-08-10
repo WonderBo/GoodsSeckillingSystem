@@ -1,14 +1,12 @@
 package com.cqu.wb.controller;
 
+import com.cqu.wb.access.AccessLimit;
 import com.cqu.wb.domain.Order;
 import com.cqu.wb.domain.SeckillOrder;
 import com.cqu.wb.domain.User;
 import com.cqu.wb.rabbitmq.SeckillMQMessage;
 import com.cqu.wb.rabbitmq.SeckillMQSender;
-import com.cqu.wb.redis.GoodsKey;
-import com.cqu.wb.redis.OrderKey;
-import com.cqu.wb.redis.RedisService;
-import com.cqu.wb.redis.SeckillKey;
+import com.cqu.wb.redis.*;
 import com.cqu.wb.result.CodeMessage;
 import com.cqu.wb.result.Result;
 import com.cqu.wb.service.GoodsService;
@@ -22,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
@@ -224,7 +223,7 @@ public class SeckillController implements InitializingBean {
      * @param user
      * @param goodsId
      * @return
-     * @description 安全优化后（隐藏秒杀地址）的秒杀接口
+     * @description 安全优化后（图形验证码、接口限流防刷、隐藏秒杀地址）的秒杀接口
      */
     @RequestMapping(value = "/{seckillPath}/do_seckill_v4", method = RequestMethod.POST)
     @ResponseBody
@@ -305,18 +304,54 @@ public class SeckillController implements InitializingBean {
      *
      * @param user
      * @param goodsId
+     * @param verifyAnswer
      * @return
-     * @description 发送秒杀请求前需要先进行验证码判断，再请求动态秒杀地址
+     * @description 发送秒杀请求前需要先进行接口单位时间访问次数限制判断【强耦合版】、验证码判断，再请求动态秒杀地址
      */
-    @RequestMapping(value = "/path", method = RequestMethod.GET)
+    @RequestMapping(value = "/path_v1", method = RequestMethod.GET)
     @ResponseBody
-    public Result<String> getSeckillPath(User user, @RequestParam("goodsId")long goodsId,
+    public Result<String> getSeckillPathV1(HttpServletRequest request, User user, @RequestParam("goodsId")long goodsId,
                                          @RequestParam(value = "verifyAnswer", defaultValue = "0") int verifyAnswer) {
         // 判断用户是否登录
         if(user == null) {
             return Result.error(CodeMessage.SESSION_ERROR);
         }
 
+        // 请求访问次数判断（此实现方式存在代码冗余，且限制要求与代码强耦合在一起，建议通用实现方式）
+        String requestURI = request.getRequestURI();
+        Integer accessCount = redisService.get(AccessKey.accessCountAccessKey, requestURI + "_" + user.getId(), Integer.class);
+        if(accessCount == null) {
+            redisService.set(AccessKey.accessCountAccessKey, requestURI + "_" + user.getId(), 1);
+        } else if(accessCount < 5) {
+            redisService.incr(AccessKey.accessCountAccessKey, requestURI + "_" + user.getId());
+        } else {
+            return Result.error(CodeMessage.ACCESS_LIMIT);
+        }
+
+        // 验证码结果判断
+        boolean checkResult = seckillService.checkVerifyAnswer(user, goodsId, verifyAnswer);
+        if(checkResult == false) {
+            return Result.error(CodeMessage.VERIFY_ERROR);
+        }
+
+        String seckillPath = seckillService.createSeckillPath(user, goodsId);
+
+        return Result.success(seckillPath);
+    }
+
+    /**
+     *
+     * @param user
+     * @param goodsId
+     * @param verifyAnswer
+     * @return
+     * @description 发送秒杀请求前需要先进行接口单位时间访问次数限制判断【注解通用版】、验证码判断，再请求动态秒杀地址
+     */
+    @AccessLimit(seconds = 5, maxCount = 5, needLogin = true)
+    @RequestMapping(value = "/path_v2", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> getSeckillPathV2(User user, @RequestParam("goodsId")long goodsId,
+                                           @RequestParam(value = "verifyAnswer", defaultValue = "0") int verifyAnswer) {
         // 验证码结果判断
         boolean checkResult = seckillService.checkVerifyAnswer(user, goodsId, verifyAnswer);
         if(checkResult == false) {

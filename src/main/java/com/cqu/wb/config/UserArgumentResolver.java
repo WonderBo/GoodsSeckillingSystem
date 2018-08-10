@@ -1,5 +1,6 @@
 package com.cqu.wb.config;
 
+import com.cqu.wb.access.UserContext;
 import com.cqu.wb.domain.User;
 import com.cqu.wb.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -55,29 +56,32 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
      */
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        // 获取Request与Response
-        HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
+//        // 获取Request与Response
+//        HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
+//        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
+//
+//        String paramToken = request.getParameter(userService.TOKEN_NAME);       // 从Request中获取对应参数
+//        String cookieToken = getCookieValue(request, userService.TOKEN_NAME);   // 从Request的Cookie中获取值
+//
+//        // 若用户信息失效则返回登录页面
+//        if(StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
+//            return "login";
+//        }
+//
+//        // 从请求参数（为兼容手机端）或者Cookie中获取用户Token，优先考虑从请求参数中获取，若无再考虑Cookie中获取
+//        String token = null;
+//        if(StringUtils.isEmpty(paramToken)) {
+//            token = cookieToken;
+//        } else {
+//            token = paramToken;
+//        }
+//        // 根据Token从Redis缓存中获取用户信息
+//        User user = userService.getUserByToken(response, token);
+//
+//        return user;
 
-        String paramToken = request.getParameter(userService.TOKEN_NAME);       // 从Request中获取对应参数
-        String cookieToken = getCookieValue(request, userService.TOKEN_NAME);   // 从Request的Cookie中获取值
-
-        // 若用户信息失效则返回登录页面
-        if(StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
-            return "login";
-        }
-
-        // 从请求参数（为兼容手机端）或者Cookie中获取用户Token，优先考虑从请求参数中获取，若无再考虑Cookie中获取
-        String token = null;
-        if(StringUtils.isEmpty(paramToken)) {
-            token = cookieToken;
-        } else {
-            token = paramToken;
-        }
-        // 根据Token从Redis缓存中获取用户信息
-        User user = userService.getUserByToken(response, token);
-
-        return user;
+        // 分布式Session中到用户信息由拦截器去获取并保存到UserContext（ThreadLocal），此处直接从UserContext中获取即可
+        return UserContext.getUser();
     }
 
     /**
@@ -87,17 +91,17 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
      * @return
      * @description 遍历请求中的Cookie，获取jsession的Cookie中的token值
      */
-    public String getCookieValue(HttpServletRequest request, String tokenName) {
-        Cookie[] cookies = request.getCookies();
-        if(cookies == null || cookies.length <= 0) {
-            return null;
-        }
-
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals(tokenName)) {
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
+//    public String getCookieValue(HttpServletRequest request, String tokenName) {
+//        Cookie[] cookies = request.getCookies();
+//        if(cookies == null || cookies.length <= 0) {
+//            return null;
+//        }
+//
+//        for(Cookie cookie : cookies) {
+//            if(cookie.getName().equals(tokenName)) {
+//                return cookie.getValue();
+//            }
+//        }
+//        return null;
+//    }
 }

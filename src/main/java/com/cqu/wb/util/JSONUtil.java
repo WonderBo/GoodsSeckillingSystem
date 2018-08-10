@@ -16,6 +16,11 @@ public class JSONUtil {
      * @description 将String类型转化为对象类型
      */
     public static <T> T stringToBean(String str, Class<T> clazz) {
+        // 输入验证
+        if(str == null || str.length() <= 0 || clazz == null) {
+            return null;
+        }
+
         // 基础类型及其封装类型判断（参数校验）
         if(clazz == int.class || clazz == Integer.class) {
             return (T)Integer.valueOf(str);
@@ -36,6 +41,11 @@ public class JSONUtil {
      * @description 将对象类型转化为String类型
      */
     public static <T> String beanTOString(T value) {
+        // 输入验证
+        if(value == null) {
+            return null;
+        }
+
         // 基础类型及其封装类型判断（参数校验）
         Class<?> clazz = value.getClass();
         if(clazz == int.class || clazz == Integer.class) {
